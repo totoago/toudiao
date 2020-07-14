@@ -75,12 +75,3 @@
 .iconzuopin:before {
   content: '\e615';
 }
-body {
-  background-color: #f5f7f9;
-}
-.page-nav-bar {
-  background-color: #3296fa !important;
-}
-.page-nav-bar .van-nav-bar__title {
-  color: #fff;
-}
