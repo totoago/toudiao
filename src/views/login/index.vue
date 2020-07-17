@@ -91,12 +91,15 @@ export default {
     },
     async sedbtn() {
       try {
+        // 表单验证
         await this.$refs.loginForm.validate('mobile')
       } catch (err) {
         return console.log('失败', err)
       }
+      // 倒计时显示
       this.isdownshow = true
       try {
+        // 获取验证码请求
         await sendsms(this.user.mobile)
         this.$toast('发送成功')
       } catch (err) {

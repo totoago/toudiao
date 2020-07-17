@@ -1,37 +1,72 @@
 <template>
   <div class="home-container">
-    <!-- 导航 -->
+    <!-- 主页导航 -->
     <van-nav-bar class="page-nav-bar" fixed>
-      <van-button class="search-btn" slot="title" type="info" round size="small" icon="search">搜索</van-button>
+      <template #left>
+        <van-image :src="require('@/assets/logo.png')" class="left-image" />
+      </template>
+      <van-button
+        class="search-btn"
+        slot="right"
+        type="info"
+        round
+        size="small"
+        icon="search"
+        to="/search"
+      >搜索</van-button>
     </van-nav-bar>
-
-    <van-tabs class="channel-tabs" :v-model="active" animated swipeable>
-      <van-tab :title="item.name" v-for="item in channels" :key="item.id">
+    <!-- 列表属性 -->
+    <van-tabs class="channel-tabs" v-model="active" animated swipeable>
+      <van-tab :title="item.name" v-for="item in channels" :key="item.id" :name="item.id">
         <article-list :channel="item" />
       </van-tab>
-      <!-- 右边横符 -->
+      <!-- 右边汉堡符 -->
       <div slot="nav-right" class="placeholder"></div>
-      <div slot="nav-right" class="hamburger-btn">
+      <div slot="nav-right" class="hamburger-btn" @click="isShoweidt = true">
         <i class="iconfont icongengduo"></i>
       </div>
     </van-tabs>
+    <!-- 弹出层 -->
+    <van-popup
+      v-model="isShoweidt"
+      closeable
+      close-icon-position="top-left"
+      position="bottom"
+      :style="{ height: '100%' }"
+    >
+      <channel-eidt
+        :my-channel="channels"
+        :active="active"
+        @changechannel="editchannel"
+        @changeActive="activechange"
+        @changepd="pdchange"
+      />
+    </van-popup>
   </div>
 </template>
 
 <script>
-import { getUserchannels } from '@/api/user'
-import ArticleList from './components/article-list'
+import { getUserchannels } from '@/api/user' // 登录接口
+import ArticleList from './components/article-list' // 下拉刷新与上拉加载组件
+import ChannelEidt from '@/components/channeleidt' // 弹出框组件
+import { mapState } from 'vuex' // 引入vuex的储存数据
+import { setItem, getItem } from '@/utils/storage' // 本地储存
+import { addChannels, delChannel } from '@/api/channel.js' // 添加频道项
 export default {
   name: '',
-  components: { ArticleList },
+  // 引入注册使用组件
+  components: { ArticleList, ChannelEidt },
   props: {},
   data() {
     return {
-      active: 0,
-      channels: []
+      active: 0, // 标签高亮
+      channels: [], // 列表数据
+      isShoweidt: false // 弹出层隐藏
     }
   },
-  coputed: {},
+  computed: {
+    ...mapState(['user'])
+  },
   watch: {},
   created() {
     this.loadchannels()
@@ -40,26 +75,85 @@ export default {
   methods: {
     async loadchannels() {
       try {
-        const { data } = await getUserchannels()
-        console.log(data)
-        this.channels = data.data.channels
+        let channels = []
+        // 判断是否登录状态
+        if (this.user) {
+          const { data } = await getUserchannels()
+          channels = data.data.channels
+        } else {
+          const localchannel = getItem('toutiaopd')
+          // 判断本地是否有数据
+          if (localchannel) {
+            channels = localchannel
+          } else {
+            // 没有数据显示系统默认
+            const { data } = await getUserchannels()
+            channels = data.data.channels
+          }
+        }
+        this.channels = channels
       } catch (err) {
         this.$toast('获取频道失败')
+      }
+    },
+    // 删除标签
+    async editchannel(id) {
+      // console.log(id)
+      const i = this.channels.findIndex(x => {
+        return x.id === id
+      })
+      this.channels.splice(i, 1)
+      // 后台删除
+      if (this.user) {
+        try {
+          await delChannel(id)
+        } catch (err) {
+          this.$toast('删除频道失败')
+        }
+      } else {
+        setItem('toutiaopd', this.channels)
+      }
+    },
+    // 高亮标签
+    activechange(id) {
+      this.active = id
+      this.isShoweidt = false
+    },
+    // 添加新标签
+    async pdchange(channel) {
+      this.channels.push(channel)
+      if (this.user) {
+        try {
+          // 添加后台数据
+          await addChannels({
+            id: channel.id,
+            seq: this.channels.length
+          })
+        } catch (err) {
+          this.$toast('添加频道项失败')
+        }
+      } else {
+        // 添加本地
+        setItem('toutiaopd', this.channels)
       }
     }
   }
 }
 </script>
 
-<style lang='less' scoped>
+<style lang="less" scoped>
 .home-container {
   padding-top: 100px;
   margin-bottom: 100px;
   /deep/.van-nav-bar__title {
     max-width: unset;
   }
+  .left-image {
+    width: 200px;
+    height: 64px;
+  }
   .search-btn {
-    width: 555px;
+    width: 455px;
     height: 64px;
     background-color: #5babfb;
     border: none;

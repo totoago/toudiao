@@ -1,20 +1,24 @@
 <template>
   <van-cell class="article-item">
-    <div slot="title" class="title van-multi-ellipsis--l2">{{article.title}}</div>
+    <!-- 标题 -->
+    <div slot="title" class="title van-multi-ellipsis--l2">{{ article.title }}</div>
     <div slot="label">
-      <div v-if="article.cover.images===3" class="cover-warp">
-        <div class="cover-item" v-for="(img,index) in article.cover.images" :key="index">
+      <div v-if="article.cover.images === 3" class="cover-warp">
+        <!-- 图片插槽展示 -->
+        <div class="cover-item" v-for="(img, index) in article.cover.images" :key="index">
           <van-image :src="img" fit="cover" class="cover-img" />
         </div>
       </div>
+      <!-- 内容 -->
       <div class="label-info">
-        <span>{{article.aut_name}}</span>
-        <span>{{article.comm_count}}评论</span>
-        <span>{{article.pubdat}}</span>
+        <span>{{ article.aut_name }}</span>
+        <span>{{ article.comm_count }}评论</span>
+        <span>{{ article.pubdate | relativeTime }}</span>
       </div>
     </div>
+    <!-- 1张图片 -->
     <van-image
-      v-if="article.cover.type===1"
+      v-if="article.cover.type === 1"
       fit="cover"
       slot="default"
       :src="article.cover.images[0]"
@@ -23,6 +27,7 @@
 </template>
 
 <script>
+import '@/utils/dayjs.js'
 export default {
   name: 'Articleitem',
   components: {},
@@ -43,8 +48,9 @@ export default {
 }
 </script>
 
-<style lang='less' scoped>
+<style lang="less" scoped>
 .article-item {
+  // min-height: 200px;
   .title {
     font-size: 32px;
     color: #3a3a3a;

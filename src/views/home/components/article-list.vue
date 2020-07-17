@@ -1,11 +1,13 @@
 <template>
   <div class="article-list">
+    <!-- 下拉刷新添加数据 -->
     <van-pull-refresh
       v-model="isrefLoading"
       @refresh="onRefresh"
       :success-text="successlist"
       :success-duration="1500"
     >
+      <!-- 上移加载刷新功能 -->
       <van-list
         v-model="loading"
         :finished="finished"
@@ -14,7 +16,8 @@
         error-text="请求失败，点击重新加载"
         @load="onLoad"
       >
-        <article-item :article="article" v-for="(article,index) in list" :key="index" />
+        <!-- 自定义组件 -->
+        <article-item :article="article" v-for="(article, index) in list" :key="index" />
         <!-- <van-cell v-for="(article,index) in list" :key="index" :title="article.title" /> -->
       </van-list>
     </van-pull-refresh>
@@ -66,10 +69,12 @@ export default {
         // console.log(data)
         const { results } = data.data
         this.list.push(...results)
+        // 加载剩余下一页
         this.loading = false
         if (this.list) {
           this.timestamp = data.data.pre_timestamp
         } else {
+          // 加载完成
           this.finished = true
         }
       } catch (err) {
@@ -85,7 +90,11 @@ export default {
           with_top: 1
         })
         const { results } = data.data
-        this.list.unshift(...results)
+        // 方法1
+        // this.list.unshift(...results)
+        // 方法2
+        this.list = results
+
         this.isrefLoading = false
         this.successlist = `刷新成功，更新了${results.length}条数据`
       } catch (err) {
@@ -97,8 +106,9 @@ export default {
 }
 </script>
 
-<style lang='less' scoped>
+<style lang="less" scoped>
 .van-list {
+  // 视口数据切换保留
   height: 79vh;
   overflow: auto;
 }

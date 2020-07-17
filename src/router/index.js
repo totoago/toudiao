@@ -9,6 +9,7 @@ const routes = [
     name: 'login',
     component: () => import('@/views/login')
   },
+
   {
     path: '/',
     component: () => import('@/views/layout'),
@@ -34,6 +35,11 @@ const routes = [
         component: () => import('@/views/my')
       }
     ]
+  },
+  {
+    path: '/search',
+    name: 'search',
+    component: () => import('@/views/search')
   }
 ]
 const router = new VueRouter({
